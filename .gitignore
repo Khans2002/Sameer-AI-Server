@@ -10,3 +10,8 @@ logs/
 static/
 tunnel.log
 cookies.txt
+bin/
+
+# Internal Notes (Local Only)
+DEVELOPER_NOTES.md
+cloudflared_setup.sh
