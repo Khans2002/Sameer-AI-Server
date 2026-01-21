@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sameer AI | Console</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        header {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #00d2ff, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .live-indicator {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        /* MAIN LAYOUT */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR (Agents) */
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+        }
+
+        .agent-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .agent-btn.active,
+        .agent-btn:hover {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: #00d2ff;
+            color: #fff;
+        }
+
+        /* CHAT AREA */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background: black;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 12px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            background: #003366;
+            color: #fff;
+        }
+
+        .msg.ai {
+            align-self: flex-start;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #ddd;
+        }
+
+        /* Rich Media Styles */
+        .msg img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #444;
+            display: block;
+        }
+
+        pre {
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #333;
+            margin: 10px 0;
+        }
+
+        code {
+            font-family: 'Menlo', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #00d2ff;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: rgba(10, 10, 10, 0.9);
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #000;
+            color: #fff;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            border-color: #00d2ff;
+        }
+
+        button.send {
+            padding: 0 30px;
+            background: #00d2ff;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* STATS PANEL (Floating) */
+        .stats-float {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            font-size: 0.8rem;
+            color: #aaa;
+            display: flex;
+            gap: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">SAMEER AI <span style="font-size: 0.8em; color: #666;">PROTOTYPE</span></div>
+        <div class="status-bar">
+            <span>Server: <span class="live-indicator">●</span> Online</span>
+            <span>Limit: {{ user_limit }} Prompts</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- AGENT SELECTION -->
+        <div class="sidebar">
+            <button id="btn-chat" class="agent-btn active" onclick="switchAgent('chat')">💬 Sameer Chat</button>
+            <button id="btn-image" class="agent-btn" onclick="switchAgent('image')">🎨 Image Gen</button>
+            <button id="btn-code" class="agent-btn" onclick="switchAgent('code')">💻 Code Lab</button>
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 20px; padding-top: 20px;">
+                <button class="agent-btn" onclick="sendFeedback()" style="color: #00ffcc;">💬 Give Feedback</button>
+            </div>
+        </div>
+
+        <!-- CHAT INTERFACE -->
+        <div class="chat-area">
+            <div class="messages" id="message-container">
+                <div class="msg ai">
+                    Hello! I am Sameer AI, developed by Gooty Mohammed Sameer Khan.<br>
+                    Select an agent from the sidebar or just start typing.
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleEnter(event)">
+                <button class="send" onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-float" id="sys-stats">
+        <span>CPU: <span id="cpu-val">--</span>%</span>
+        <span>Users: <span id="users-val">--</span></span>
+    </div>
+
+    <script>
+        let currentAgent = 'chat';
+
+        function switchAgent(agent) {
+            currentAgent = agent;
+
+            // UI Toggle
+            document.querySelectorAll('.agent-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${agent}`).classList.add('active');
+
+            const input = document.getElementById('user-input');
+
+            if (agent === 'image') {
+                input.value = "/imagine ";
+                input.placeholder = "Describe an image (e.g. 'Cyberpunk City')...";
+            } else if (agent === 'code') {
+                input.value = "monika ";
+                input.placeholder = "Describe a task (e.g. 'Write a Python calculator')...";
+            } else {
+                input.value = "";
+                input.placeholder = "Type your message...";
+            }
+            input.focus();
+        }
+
+        async function sendFeedback() {
+            let msg = prompt("Help us improve Sameer AI. What's on your mind?");
+            if (msg) {
+                let formData = new FormData();
+                formData.append("message", msg);
+                await fetch("/api/feedback", { method: "POST", body: formData });
+                alert("Thank you! Your feedback has been sent to Gooty Mohammed Sameer Khan.");
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add User Msg
+            addMessage(text, 'user');
+            input.value = '';
+
+            // Auto-maintain context if in mode
+            if (currentAgent === 'image' && !text.startsWith('/imagine')) {
+                // If user deleted prefix but still in image mode, unexpected behavior.
+                // We rely on what they actually sent, or we could force prefix.
+                // For now, let's just clear mode if they manual cleared text?
+                // Or better, just trust the backend routing.
+            }
+
+            // Show Thinking
+            const loadingId = addMessage('Thinking...', 'ai', true);
+
+            try {
+                const formData = new FormData();
+                formData.append('prompt', text);
+
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                // Remove loading
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+
+                if (res.ok) {
+                    addMessage(data.response, 'ai', false, data.image_url);
+                } else {
+                    addMessage("Error: " + (data.detail || "Server Error"), 'ai');
+                }
+            } catch (e) {
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) loadingEl.remove();
+                addMessage("Connection Failed. Fuse might be blown.", 'ai');
+            }
+        }
+
+        function addMessage(text, type, isLoading = false, imageUrl = null) {
+            const container = document.getElementById('message-container');
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+
+            if (isLoading) div.id = 'loading-' + Date.now();
+
+            // Format Text (Basic Markdown)
+            let formatted = text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // Escape HTML
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Bold
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // Code Blocks
+                .replace(/`([^`]+)`/g, '<code>$1</code>') // Inline Code
+                .replace(/\n/g, '<br>');
+
+            div.innerHTML = formatted;
+
+            // Append Image if exists
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.onclick = () => window.open(imageUrl, '_blank');
+                div.appendChild(img);
+            }
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return div.id;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        // Live Stats Updater
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                document.getElementById('cpu-val').innerText = data.cpu;
+                document.getElementById('users-val').innerText = data.users;
+            } catch (e) { }
+        }, 2000);
+    </script>
+
+</body>
+
+</html>

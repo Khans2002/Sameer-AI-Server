@@ -1,0 +1,17 @@
+
+fastapi
+uvicorn
+jinja2
+psutil
+requests
+httpx
+python-multipart
+# AI Core Dependencies (from v7)
+Pillow
+openai
+torch
+diffusers
+transformers
+accelerate
+scipy
+safetensors
