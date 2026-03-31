@@ -48,5 +48,5 @@ The server acts as the hub for specialized agents:
 
 ## 📸 Screenshots
 
-![Console Interface](<Screenshot 2025-12-31 at 2.18.32 AM.png>)
-![Login Interface](<Screenshot 2025-12-31 at 2.18.39 AM.png>)
+![Console Interface](console.png)
+![Login Interface](login.png)
